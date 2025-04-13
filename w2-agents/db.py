@@ -4,12 +4,6 @@ from firebase_admin import firestore
 from firebase_admin import credentials
 
 import os
-import json
-import base64
-
-base64_credentials = os.environ.get("GOOGLE_API_B64")
-decoded_credentials = base64.b64decode(base64_credentials).decode('utf-8')
-cred_dict = json.loads(decoded_credentials)
 
 cred = credentials.Certificate("cred.json")
 app = firebase_admin.initialize_app(cred)
