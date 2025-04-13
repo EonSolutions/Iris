@@ -2,30 +2,25 @@
 IRIS is a dynamic AI swarm technology based on the Ethereum blockchain. We leverage decentralized infrastructure to empower anyone to create their own AI nodes, agents, or tools — each with unique capabilities, knowledge, or API access. These nodes can seamlessly collaborate during inference, forming an intelligent, self-organizing network.
 
 ## Mission:
-Our mission is to revolutionize organizational decision-making by democratizing access to specialized expertise. Iris eliminates information silos, enabling enterprises to harness collective intelligence at scale—ensuring that every decision is informed by deep, domain-specific insights. Imagine a future where organizations operate with unparalleled foresight and agility, overcoming challenges before they arise. This transformative vision empowers every enterprise to innovate boldly and lead confidently in an ever-evolving landscape.
+Our mission is to provide a new paradigm for AI swarms - one that empowers users and organizations in creating their own agents that take part in the swarm. The agents can communicate with each other, working together to perform calculations or agreeing amongst themselves on which agent has the most authority to provide an answer on a certain question. This allows Iris to revolutionize what is possible with AI, potentially powering super-connected AI assistance with near-infinite capabilities and knowledge. 
 
 ## Key Features:
-- Dynamic Agent Orchestration: Activates and coordinates specialized agents in real time to address multifaceted challenges.
-- Bias Mitigation: Distributes decision-making processes across multiple agents, minimizing single-source biases.
-- Continuous Learning: Incorporates reinforcement learning to ensure perpetual system enhancement and adaptation.
-- Agent Extensibility: Integrates external specialized agents, extending the system's capabilities as needed.
-- Context-Aware Processing: Maintains robust understanding across complex problem spaces to deliver accurate and relevant solutions.
+- AI/API Agent Swarm: Many specialist AI and API contracts have been deployed on the chain, allowing us to provide an example of simple text based inference. 
+- Dynamic Agent System: Users may register their own AI and API contracts, for which we would track usage, reputation and cost.
+- Visualization: Our 3D vizualisation tool allows users to model the network "universe", see by which channels agents on the network are currently communicating. 
   
 ## How does Iris Work?
-Input Processing: Queries are analyzed and decomposed into domain-specific components<br></br>
-Agent Selection: Relevant specialist agents are dynamically activated based on query context<br></br>
-Parallel Processing: Multiple agents work concurrently to address specialized aspects<br></br>
-Knowledge Synthesis: Results are aggregated through our proprietary consensus algorithm<br></br>
-Response Generation: Final output is formulated incorporating multi-domain expertise
+Iris is based on ETH smart contracts written in solidity. Each agent in the "_universe_" (IRIS network) is given localised information about agents nearby in the network, such as their statistics, declared purpose, etc. They then have the autonomy to either perform a calculation themselves, such as inferencing an AI or accessing an API; or delegating to a neigbouring agent, or both. This allows agents to perform a pseudo-searching algorithm, looking for the best suited AI to to the job, as well as collaborating on performing certain tasks (e.g. `if the weather is nice today, order me a coffee`). Blockchain grants us guarantees of transparancy, validity and money-making potential - all vital preconditions for users and agent creators alike. 
 
-## Architecture
-The true innovation behind Iris is not any single algorithm but rather the orchestration framework that enables specialized agents to function as a cohesive unit, sharing insights and building upon each other's strengths while compensating for individual limitations. Iris capabilities are:
-- Agent Network Topology: Our proprietary mesh architecture allows agents to communicate directly, creating an emergent intelligence greater than the sum of individual components
-- Knowledge Graph Integration: Each specialist maintains and contributes to a unified knowledge graph that evolves with every interaction
-- Consensus Mechanisms: Multiple voting systems allow different specialist agents to contribute proportionally to their relevance
-- Memory Management: A hierarchical memory system maintains both short-term context and long-term learning
-- Continuous Evaluation: Background processes constantly evaluate agent performance and adjust weights accordingly
-##
-Iris: Empowering organizations with collective intelligence to drive strategic decisions in an ever-evolving landscape.
+## Roadmap to Release
+- Creating a standardized protocol, opening up an API to easily deploy agents onto the IRIS universe.
+- Multimodal input/output, with potential for fully autonomous agents.
+- Implementing a fair reward / payment system for API utilisation. 
 
-  
+## Example Potential
+- A personal assistant (e.g. _Google Assistant_, _Siri_) that can interface automatically with virtually any API on Web2, e.g. booking concert tickets, ordering a coffee, checking football scores.
+- Daily life automation app, an app to create simple AI powered shortcuts, with features such as home temperature control based on security camera data, or automatically let a dog into a garden if its asking for it.
+- Super-smart customer service bots, can create tickets and work with expert agents in the field relating to the customer's problem. 
+
+## Conclusion
+Our team is extremely proud to have worked on IRIS this Encode Hackathon. We'd like to extend a huge thank you to Encode Club, Nethermind, and the rest of the sponsors for making this possible. We're really excied to continue to work on Iris in the future, and the journey it will take us on!
