@@ -187,6 +187,90 @@ const ToggleContainer = styled.div<SidebarProps>`
 `;
 
 /* -------------------------------------------------------------------------- */
+/*                   FirebaseLogs Component (Logs Panel)                    */
+/* -------------------------------------------------------------------------- */
+const ContentPanel = styled.div`
+  background-color: #1a1a1a;
+  border: 1px solid rgba(127, 86, 217, 0.3);
+  border-radius: 8px;
+  padding: 1.5rem;
+  animation: ${keyframes`
+    0% { opacity: 0; transform: translateY(-10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  `} 0.3s ease-out;
+`;
+
+const FirebaseLogs: React.FC = () => {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch logs in realtime from the Firestore "logs" collection
+  useEffect(() => {
+    const logsCollection = collection(db, "logs");
+    const unsubscribe = onSnapshot(logsCollection, (snapshot) => {
+      const fetchedLogs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log("[FirebaseLogs] Fetched logs:", fetchedLogs); // Log the data
+      setLogs(fetchedLogs);
+      setLoading(false);
+    });
+
+    return () => {
+      console.log("[FirebaseLogs] Unsubscribing from Firestore snapshot.");
+      unsubscribe();
+    };
+  }, []);
+
+  if (loading) {
+    console.log("[FirebaseLogs] Loading logs...");
+    return (
+      <ContentPanel>
+        <h2>Loading Logs...</h2>
+      </ContentPanel>
+    );
+  }
+
+  return (
+    <ContentPanel>
+      <h2>Firebase Logs</h2>
+      {logs.length === 0 ? (
+        <p>No logs available.</p>
+      ) : (
+        logs.map((log, index) => {
+          // Log each log item when rendering
+          console.log(`[FirebaseLogs] Render log ${index + 1}:`, log);
+          return (
+            <div
+              key={log.id}
+              style={{
+                marginBottom: "1rem",
+                paddingBottom: "0.5rem",
+                borderBottom: "1px solid #52525b",
+              }}
+              onClick={() => console.log("[FirebaseLogs] Clicked log:", log)}
+            >
+              <h3 style={{ margin: "0 0 0.3rem 0" }}>
+                {log.title || `Log ${index + 1}`}
+              </h3>
+              <p style={{ margin: "0 0 0.3rem 0" }}>
+                {log.message || "No message provided."}
+              </p>
+              {log.timestamp && (
+                <small style={{ color: "#ccc" }}>
+                  {new Date(log.timestamp).toLocaleString()}
+                </small>
+              )}
+            </div>
+          );
+        })
+      )}
+    </ContentPanel>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
 /*                           Main Content Area                                */
 /* -------------------------------------------------------------------------- */
 interface ContentAreaProps {
@@ -202,21 +286,8 @@ const ContentArea = styled.div<ContentAreaProps>`
 `;
 
 /* -------------------------------------------------------------------------- */
-/*                        Content Panel & InfoPanel                         */
+/*                      InfoPanel for Other Sections                        */
 /* -------------------------------------------------------------------------- */
-const panelFadeIn = keyframes`
-  0% { opacity: 0; transform: translateY(-10px); }
-  100% { opacity: 1; transform: translateY(0); }
-`;
-
-const ContentPanel = styled.div`
-  background-color: #1a1a1a;
-  border: 1px solid rgba(127, 86, 217, 0.3);
-  border-radius: 8px;
-  padding: 1.5rem;
-  animation: ${panelFadeIn} 0.3s ease-out;
-`;
-
 const InfoPanel: React.FC<{ title: string; content: string }> = ({
   title,
   content,
@@ -402,12 +473,25 @@ const FirebaseLogs: React.FC = () => {
 /*                           Main Dashboard Component                         */
 /* -------------------------------------------------------------------------- */
 const Dashboard: React.FC = () => {
-  // The "workflow" panel is now replaced with FirebaseLogs (grouped).
+  // activePanel values are now "logs", "line", "pie", or "area"
   const [activePanel, setActivePanel] = useState<
-    "workflow" | "line" | "pie" | "area" | null
+    "logs" | "line" | "pie" | "area" | null
   >(null);
   const [isSidebarExpanded, setSidebarExpanded] = useState<boolean>(false);
   const navigate = useNavigate();
+
+  const handlePanelChange = (panel: "logs" | "line" | "pie" | "area") => {
+    console.log(`[Dashboard] Changing active panel to: ${panel}`);
+    setActivePanel(panel);
+  };
+
+  const handleToggleSidebar = () => {
+    setSidebarExpanded((prev) => {
+      const newState = !prev;
+      console.log(`[Dashboard] Sidebar expanded state: ${newState}`);
+      return newState;
+    });
+  };
 
   return (
     <DashboardContainer>
@@ -417,43 +501,44 @@ const Dashboard: React.FC = () => {
           <span>Iris</span>
         </Branding>
         <IconsWrapper>
+          {/* First Icon: Firebase Logs */}
           <IconItem
             expanded={isSidebarExpanded}
-            onClick={() => setActivePanel("workflow")}
+            onClick={() => handlePanelChange("logs")}
           >
             <BarChart size={30} />
             {isSidebarExpanded && <IconLabel>Logs</IconLabel>}
           </IconItem>
           <IconItem
             expanded={isSidebarExpanded}
-            onClick={() => setActivePanel("line")}
+            onClick={() => handlePanelChange("line")}
           >
             <LineChart size={30} />
             {isSidebarExpanded && <IconLabel>Line Chart</IconLabel>}
           </IconItem>
           <IconItem
             expanded={isSidebarExpanded}
-            onClick={() => setActivePanel("pie")}
+            onClick={() => handlePanelChange("pie")}
           >
             <PieChart size={30} />
             {isSidebarExpanded && <IconLabel>Pie Chart</IconLabel>}
           </IconItem>
           <IconItem
             expanded={isSidebarExpanded}
-            onClick={() => setActivePanel("area")}
+            onClick={() => handlePanelChange("area")}
           >
             <AreaChart size={30} />
             {isSidebarExpanded && <IconLabel>Area Chart</IconLabel>}
           </IconItem>
         </IconsWrapper>
-        <ExitButton expanded={isSidebarExpanded} onClick={() => navigate("/")}>
+        <ExitButton expanded={isSidebarExpanded} onClick={() => {
+          console.log("[Dashboard] Exiting dashboard, navigating to root.");
+          navigate("/");
+        }}>
           <LogOut size={20} />
           <span>Exit</span>
         </ExitButton>
-        <ToggleContainer
-          expanded={isSidebarExpanded}
-          onClick={() => setSidebarExpanded((prev) => !prev)}
-        >
+        <ToggleContainer expanded={isSidebarExpanded} onClick={handleToggleSidebar}>
           {isSidebarExpanded ? (
             <ChevronLeft size={20} />
           ) : (
@@ -462,7 +547,7 @@ const Dashboard: React.FC = () => {
         </ToggleContainer>
       </Sidebar>
       <ContentArea expanded={isSidebarExpanded}>
-        {activePanel === "workflow" && <FirebaseLogs />}
+        {activePanel === "logs" && <FirebaseLogs />}
         {activePanel === "line" && (
           <InfoPanel
             title="Line Chart Details"
