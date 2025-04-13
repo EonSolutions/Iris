@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 // -------------------- OVERLAY & CONTAINER -------------------- //
 
@@ -36,14 +38,20 @@ const SciFiCardSVG = () => {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const { clientX: x, clientY: y } = e;
-      // Calculate rotation offsets
       const rotX = (y / window.innerHeight - 0.5) * -300;
       const rotY = (x / window.innerWidth - 0.5) * 300;
       setRotationOffset({ x: rotX, y: rotY });
+      console.log("SciFiCardSVG mouse move", { x, y, rotX, rotY });
     };
 
-    const handleMouseDown = () => setIsMouseDown(true);
-    const handleMouseUp = () => setIsMouseDown(false);
+    const handleMouseDown = () => {
+      setIsMouseDown(true);
+      console.log("SciFiCardSVG mouse down");
+    };
+    const handleMouseUp = () => {
+      setIsMouseDown(false);
+      console.log("SciFiCardSVG mouse up");
+    };
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mousedown", handleMouseDown);
@@ -123,9 +131,7 @@ const SciFiCardSVG = () => {
         <g
           stroke="#88d2c2f0"
           strokeWidth="2"
-          transform={`rotate(${
-            (rotationOffset.y + rotationOffset.x) * 0.2
-          } 300 300)`}
+          transform={`rotate(${(rotationOffset.y + rotationOffset.x) * 0.2} 300 300)`}
         >
           {Array.from({ length: 12 }).map((_, i) => (
             <g key={i} transform={`rotate(${i * 30} 300 300)`}>
@@ -137,8 +143,6 @@ const SciFiCardSVG = () => {
     </AnimatedSVG>
   );
 };
-
-// -------------------- STATS RADAR CHART COMPONENT -------------------- //
 
 const RadarChartContainer = styled.svg`
   width: 100%;
@@ -172,7 +176,7 @@ const StatsRadarChart: React.FC<StatsRadarChartProps> = ({ data }) => {
     })
     .join(" ");
 
-  // Create concentric rings for reference (25%, 50%, 75%, and 100%).
+  // Create concentric rings for reference.
   const rings = [0.25, 0.5, 0.75, 1].map((scale) => {
     return data
       .map((_, i) => {
@@ -214,8 +218,8 @@ const StatsRadarChart: React.FC<StatsRadarChartProps> = ({ data }) => {
       })}
       <polygon
         points={points}
-        fill="rgba(216, 180, 254, 0.4)" // Semi-transparent purple fill
-        stroke="#d8b4fe" // Solid purple outline
+        fill="rgba(216, 180, 254, 0.4)"
+        stroke="#d8b4fe"
         strokeWidth="2"
       />
       {data.map((d, i) => {
@@ -240,40 +244,40 @@ const StatsRadarChart: React.FC<StatsRadarChartProps> = ({ data }) => {
   );
 };
 
-// -------------------- CARD DETAIL OVERLAY (RIGHT SIDE) -------------------- //
-
-// Positioned on the right side, vertically centered.
 const CardDetailOverlay = styled.div`
   position: absolute;
   top: 50%;
   right: 600px;
   transform: translateY(-50%);
   min-width: 300px;
-  background-color: #1c1c1e; /* Grayish black */
-  border: 1px solid #ffffff; /* White outline */
+  background-color: #1c1c1e;
+  border: 1px solid #ffffff;
   border-radius: 8px;
   padding: 1.5rem;
   z-index: 9999;
   text-align: left;
 `;
 
-// Title styled with larger light-blue text.
 const DetailTitle = styled.h4`
   margin: 0 0 0.75rem;
-  font-size: 1.5rem; /* Larger font size */
-  color: #d8b4fe; /* Light blue */
+  font-size: 1.5rem;
+  color: #d8b4fe;
   font-weight: 600;
   white-space: nowrap;
 `;
 
-// Individual stat items.
 const StatItem = styled.div`
-  font-size: 1.2rem; /* Increased font size */
+  font-size: 1.2rem;
   color: #fff;
   margin: 0.5rem 0;
 `;
 
-// -------------------- SCI-FI TAG CARD -------------------- //
+const Description = styled.p`
+  color: #ccc;
+  font-size: 0.9rem;
+  margin: 0.5rem 0 1rem;
+  line-height: 1.4;
+`;
 
 const SciFiTagCard = styled.div`
   position: relative;
@@ -293,43 +297,115 @@ const SciFiTagCard = styled.div`
   }
 `;
 
-// -------------------- HELPER FUNCTION TO GENERATE RANDOM DATA -------------------- //
+interface AgentData {
+  address: string;
+  description: string;
+  efficiency: number;
+  latency: number;
+  learning: number;
+  name: string;
+  relations: number;
+  reliability?: number;
+}
 
-const getRandomInt = (min: number, max: number) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
+interface PopupProps {
+  agentId: string;
+}
 
-// -------------------- MAIN POPUP COMPONENT -------------------- //
+const Popup: React.FC<PopupProps> = ({ agentId }) => {
+  console.log("Popup component rendering with agentId:", agentId);
 
-const Popup = () => {
-  // State for randomized radar data.
+  if (!agentId || typeof agentId !== "string") {
+    console.error("Popup: Invalid agentId provided!", agentId);
+    return (
+      <Overlay>
+        <PopupContainer>
+          <SciFiTagCard>
+            <SciFiCardSVG />
+            <CardDetailOverlay>
+              <DetailTitle>Error: No valid agentId.</DetailTitle>
+            </CardDetailOverlay>
+          </SciFiTagCard>
+        </PopupContainer>
+      </Overlay>
+    );
+  }
+
+  const [agentData, setAgentData] = useState<AgentData | null>(null);
   const [radarData, setRadarData] = useState<
     { label: string; value: number; maxValue: number }[]
   >([]);
 
   useEffect(() => {
-    // Generate random data for each stat on mount.
-    setRadarData([
-      { label: "Relations", value: getRandomInt(300, 500), maxValue: 500 },
-      { label: "Uptime", value: getRandomInt(80, 100), maxValue: 100 },
-      { label: "Response", value: getRandomInt(50, 100), maxValue: 100 },
-      { label: "Latency", value: getRandomInt(10, 50), maxValue: 100 },
-    ]);
-  }, []);
+    console.log("Popup useEffect triggered for agentId:", agentId);
+    const agentDocRef = doc(db, "agents", agentId);
+    console.log("Created Firestore doc reference for agentId:", agentId);
+    const unsubscribe = onSnapshot(
+      agentDocRef,
+      (docSnap) => {
+        console.log(
+          "onSnapshot triggered for agentId:",
+          agentId,
+          "exists:",
+          docSnap.exists(),
+          "data:",
+          docSnap.data()
+        );
+        if (docSnap.exists()) {
+          const data = docSnap.data() as AgentData;
+          console.log("Document snapshot data:", data);
+          setAgentData(data);
+          setRadarData([
+            { label: "Relations", value: data.relations || 0, maxValue: 10 },
+            { label: "Efficiency", value: data.efficiency || 0, maxValue: 100 },
+            { label: "Learning", value: data.learning || 0, maxValue: 100 },
+            { label: "Latency", value: 200 - (data.latency || 0), maxValue: 200 },
+          ]);
+        } else {
+          console.log("No document found for agentId:", agentId);
+        }
+      },
+      (error) => {
+        console.error("Error fetching document for agentId:", agentId, error);
+      }
+    );
 
+    return () => {
+      console.log("Cleaning up onSnapshot listener for agentId:", agentId);
+      unsubscribe();
+    };
+  }, [agentId]);
+
+  if (!agentData) {
+    console.log("agentData is null, rendering loading state.");
+    return (
+      <Overlay>
+        <PopupContainer>
+          <SciFiTagCard>
+            <SciFiCardSVG />
+            <CardDetailOverlay>
+              <DetailTitle>Loading...</DetailTitle>
+            </CardDetailOverlay>
+          </SciFiTagCard>
+        </PopupContainer>
+      </Overlay>
+    );
+  }
+
+  console.log("agentData fetched successfully, rendering popup content.");
   return (
     <Overlay>
       <PopupContainer>
         <SciFiTagCard>
           <SciFiCardSVG />
-          {/* Right-side stats overlay */}
           <CardDetailOverlay>
-            <DetailTitle>OpenAI Agent</DetailTitle>
-            <StatItem>ID: 0xf66910ab</StatItem>
-            <StatItem>Relations: {radarData[0]?.value || "..."}</StatItem>
-            <StatItem>Uptime: {radarData[1]?.value || "..."}%</StatItem>
-            <StatItem>Response: {radarData[2]?.value || "..."}ms</StatItem>
-            <StatItem>Latency: {radarData[3]?.value || "..."}ms</StatItem>
-            {/* Radar chart displaying the stats */}
+            <DetailTitle>{agentData.name}</DetailTitle>
+            <Description>{agentData.description}</Description>
+            <StatItem>Address: {agentData.address}...</StatItem>
+            <StatItem>Relations: {agentData.relations}</StatItem>
+            <StatItem>Efficiency: {agentData.efficiency}%</StatItem>
+            <StatItem>Learning: {agentData.learning}%</StatItem>
+            <StatItem>Latency: {agentData.latency}ms</StatItem>
             <StatsRadarChart data={radarData} />
           </CardDetailOverlay>
         </SciFiTagCard>
