@@ -570,7 +570,7 @@ function App() {
     console.log("Opening WebSocket to send message:", message);
     // Clear previous workflow events before sending a new message.
     setWorkflowEvents([]);
-    const ws = new WebSocket("ws://localhost:8000/ws");
+    const ws = new WebSocket("ws://iris-734i.onrender.com:80/ws");
     ws.onopen = () => {
       console.log("WebSocket connection opened for sending message");
       ws.send(JSON.stringify({ input: message, wallet: walletAddress }));

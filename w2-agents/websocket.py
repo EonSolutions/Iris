@@ -11,6 +11,8 @@ from web3 import Web3
 from dotenv import load_dotenv
 load_dotenv()
 
+
+
 import oracle
 
 import asyncio
@@ -36,6 +38,16 @@ async def safe_discard(item):
         active_sockets.discard(item)
 
 app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or specify domains here
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 logger = logging.getLogger("websocket")
 

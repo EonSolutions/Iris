@@ -412,62 +412,7 @@ interface LogGroupType {
   }>;
 }
 
-const FirebaseLogs: React.FC = () => {
-  const [logGroups, setLogGroups] = useState<LogGroupType[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const logsCollection = collection(db, "logs");
-    const unsubscribe = onSnapshot(logsCollection, (snapshot) => {
-      // Log each document's raw data for debugging.
-      snapshot.docs.forEach((doc) => {
-        console.log("Document data:", doc.data());
-      });
-      // Map each document into a grouped log object.
-      const groups = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          firestoreDocId: doc.id,
-          wallet: data.wallet,
-          timestamp: data.timestamp,
-          logs: Array.isArray(data.logs)
-            ? data.logs.map((logItem: any) => ({
-                id: logItem.id,
-                title: logItem.title,
-                detail: logItem.detail,
-                status: logItem.status,
-              }))
-            : [],
-        };
-      });
-      console.log("Grouped fetched logs:", groups);
-      setLogGroups(groups);
-      setLoading(false);
-    });
-    return unsubscribe;
-  }, []);
-
-  if (loading) {
-    return (
-      <ContentPanel>
-        <h2>Loading Logs...</h2>
-      </ContentPanel>
-    );
-  }
-
-  return (
-    <ContentPanel>
-      <h2>Firebase Logs</h2>
-      {logGroups.length === 0 ? (
-        <p>No logs available.</p>
-      ) : (
-        logGroups.map((group) => (
-          <LogGroup key={group.firestoreDocId} {...group} />
-        ))
-      )}
-    </ContentPanel>
-  );
-};
 
 /* -------------------------------------------------------------------------- */
 /*                           Main Dashboard Component                         */
