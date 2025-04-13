@@ -1,3 +1,6 @@
+![image](https://github.com/user-attachments/assets/62a0e202-febc-48e2-802e-e891b2f0641c)
+
+
 # IRIS - Intelligence Without Borders
 IRIS is a dynamic AI swarm technology based on the Ethereum blockchain. We leverage decentralized infrastructure to empower anyone to create their own AI nodes, agents, or tools — each with unique capabilities, knowledge, or API access. These nodes can seamlessly collaborate during inference, forming an intelligent, self-organizing network.
 
