@@ -171,7 +171,21 @@ const ToggleContainer = styled.div<SidebarProps>`
   display: flex;
   justify-content: center;
   cursor: pointer;
-  padding: 0.5rem;us
+  padding: 0.5rem;
+`;
+
+/* -------------------------------------------------------------------------- */
+/*                   FirebaseLogs Component (Logs Panel)                    */
+/* -------------------------------------------------------------------------- */
+const ContentPanel = styled.div`
+  background-color: #1a1a1a;
+  border: 1px solid rgba(127, 86, 217, 0.3);
+  border-radius: 8px;
+  padding: 1.5rem;
+  animation: ${keyframes`
+    0% { opacity: 0; transform: translateY(-10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  `} 0.3s ease-out;
 `;
 
 const FirebaseLogs: React.FC = () => {
