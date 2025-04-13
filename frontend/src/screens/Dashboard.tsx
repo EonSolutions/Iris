@@ -200,14 +200,19 @@ const FirebaseLogs: React.FC = () => {
         id: doc.id,
         ...doc.data(),
       }));
+      console.log("[FirebaseLogs] Fetched logs:", fetchedLogs); // Log the data
       setLogs(fetchedLogs);
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      console.log("[FirebaseLogs] Unsubscribing from Firestore snapshot.");
+      unsubscribe();
+    };
   }, []);
 
   if (loading) {
+    console.log("[FirebaseLogs] Loading logs...");
     return (
       <ContentPanel>
         <h2>Loading Logs...</h2>
@@ -221,28 +226,33 @@ const FirebaseLogs: React.FC = () => {
       {logs.length === 0 ? (
         <p>No logs available.</p>
       ) : (
-        logs.map((log, index) => (
-          <div
-            key={log.id}
-            style={{
-              marginBottom: "1rem",
-              paddingBottom: "0.5rem",
-              borderBottom: "1px solid #52525b",
-            }}
-          >
-            <h3 style={{ margin: "0 0 0.3rem 0" }}>
-              {log.title || `Log ${index + 1}`}
-            </h3>
-            <p style={{ margin: "0 0 0.3rem 0" }}>
-              {log.message || "No message provided."}
-            </p>
-            {log.timestamp && (
-              <small style={{ color: "#ccc" }}>
-                {new Date(log.timestamp).toLocaleString()}
-              </small>
-            )}
-          </div>
-        ))
+        logs.map((log, index) => {
+          // Log each log item when rendering
+          console.log(`[FirebaseLogs] Render log ${index + 1}:`, log);
+          return (
+            <div
+              key={log.id}
+              style={{
+                marginBottom: "1rem",
+                paddingBottom: "0.5rem",
+                borderBottom: "1px solid #52525b",
+              }}
+              onClick={() => console.log("[FirebaseLogs] Clicked log:", log)}
+            >
+              <h3 style={{ margin: "0 0 0.3rem 0" }}>
+                {log.title || `Log ${index + 1}`}
+              </h3>
+              <p style={{ margin: "0 0 0.3rem 0" }}>
+                {log.message || "No message provided."}
+              </p>
+              {log.timestamp && (
+                <small style={{ color: "#ccc" }}>
+                  {new Date(log.timestamp).toLocaleString()}
+                </small>
+              )}
+            </div>
+          );
+        })
       )}
     </ContentPanel>
   );
@@ -264,183 +274,8 @@ const ContentArea = styled.div<ContentAreaProps>`
 `;
 
 /* -------------------------------------------------------------------------- */
-/*                      Workflow Heading Banner (Optional)                  */
+/*                      InfoPanel for Other Sections                        */
 /* -------------------------------------------------------------------------- */
-const WorkflowHeadingBanner = styled.div`
-  background-color: rgba(127, 86, 217, 0.15);
-  border: 1px solid rgba(127, 86, 217, 0.5);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  font-size: 1.1rem;
-  text-align: center;
-`;
-
-/* -------------------------------------------------------------------------- */
-/*                    New Vertical Timeline (Without Line)                  */
-/* -------------------------------------------------------------------------- */
-
-// Container for timeline items
-const VerticalTimelineContainer = styled.div`
-  position: relative;
-  margin: 2rem 0;
-`;
-
-// Each timeline item is a flex row with a circle on the left and content on the right.
-const TimelineItem = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 2.5rem;
-`;
-
-// The animated circle for each item
-const TimelineDot = styled.div<{ status: string }>`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid #1a1a1a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  font-weight: bold;
-  color: #000;
-
-  background-color: ${({ status }) => {
-    switch (status) {
-      case "success":
-        return "#28a745";
-      case "inProgress":
-        return "#ffa500";
-      case "failure":
-        return "#dc3545";
-      default:
-        return "#777";
-    }
-  }};
-
-  animation: ${({ status }) => {
-    switch (status) {
-      case "success":
-        return css`
-          ${glow} 2s infinite
-        `;
-      case "inProgress":
-        return css`
-          ${pulseRing} 2s infinite
-        `;
-      case "failure":
-        return css`
-          ${flicker} 0.7s infinite
-        `;
-      default:
-        return "none";
-    }
-  }};
-
-  &:hover {
-    transform: scale(1.15);
-  }
-`;
-
-// The content card for each timeline item
-const TimelineContent = styled.div`
-  background-color: #1a1a1a;
-  border: 1px solid rgba(127, 86, 217, 0.3);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-left: 1rem;
-  flex: 1;
-`;
-
-const TimelineTitle = styled.h3`
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  font-weight: bold;
-`;
-
-const TimelineDetail = styled.p`
-  margin: 0;
-  font-size: 0.9rem;
-  color: #ccc;
-`;
-
-/* -------------------------------------------------------------------------- */
-/*                      Dummy Workflow Data                                 */
-/* -------------------------------------------------------------------------- */
-const dummyWorkflows = [
-  {
-    id: "KPD-136",
-    title: "Add text block with background",
-    detail: "CI #227: Pull request #236 by fsylum",
-    status: "success",
-  },
-  {
-    id: "KAP-23",
-    title: "Initial code for the hero full width block",
-    detail: "CI #242 ready_for_review by ridimova",
-    status: "inProgress",
-  },
-  {
-    id: "KPD-141",
-    title: "Main navigation",
-    detail: "CI #225 synchronize by joleenk",
-    status: "failure",
-  },
-  {
-    id: "AG-999",
-    title: "Additional agent check",
-    detail: "Not started or waiting for resources",
-    status: "pending",
-  },
-];
-
-/* -------------------------------------------------------------------------- */
-/*                        WorkflowTimeline Component                          */
-/* -------------------------------------------------------------------------- */
-const WorkflowTimeline: React.FC = () => {
-  return (
-    <>
-      <WorkflowHeadingBanner>
-        This workflow has a <strong>workflow_dispatch</strong> event trigger
-      </WorkflowHeadingBanner>
-      <VerticalTimelineContainer>
-        {dummyWorkflows.map((wf, index) => (
-          <TimelineItem key={index}>
-            <TimelineDot
-              status={wf.status}
-              title={`${wf.id} - ${wf.title}\n${wf.detail}`}
-            >
-              {index + 1}
-            </TimelineDot>
-            <TimelineContent>
-              <TimelineTitle>{`${wf.id} - ${wf.title}`}</TimelineTitle>
-              <TimelineDetail>{wf.detail}</TimelineDetail>
-            </TimelineContent>
-          </TimelineItem>
-        ))}
-      </VerticalTimelineContainer>
-    </>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/*                          Content Panel & InfoPanel                         */
-/* -------------------------------------------------------------------------- */
-const panelFadeIn = keyframes`
-  0% { opacity: 0; transform: translateY(-10px); }
-  100% { opacity: 1; transform: translateY(0); }
-`;
-
-const ContentPanel = styled.div`
-  background-color: #1a1a1a;
-  border: 1px solid rgba(127, 86, 217, 0.3);
-  border-radius: 8px;
-  padding: 1.5rem;
-  animation: ${panelFadeIn} 0.3s ease-out;
-`;
-
 const InfoPanel: React.FC<{ title: string; content: string }> = ({
   title,
   content,
@@ -455,11 +290,25 @@ const InfoPanel: React.FC<{ title: string; content: string }> = ({
 /*                           Main Dashboard Component                         */
 /* -------------------------------------------------------------------------- */
 const Dashboard: React.FC = () => {
+  // activePanel values are now "logs", "line", "pie", or "area"
   const [activePanel, setActivePanel] = useState<
-    "workflow" | "line" | "pie" | "area" | null
+    "logs" | "line" | "pie" | "area" | null
   >(null);
   const [isSidebarExpanded, setSidebarExpanded] = useState<boolean>(false);
   const navigate = useNavigate();
+
+  const handlePanelChange = (panel: "logs" | "line" | "pie" | "area") => {
+    console.log(`[Dashboard] Changing active panel to: ${panel}`);
+    setActivePanel(panel);
+  };
+
+  const handleToggleSidebar = () => {
+    setSidebarExpanded((prev) => {
+      const newState = !prev;
+      console.log(`[Dashboard] Sidebar expanded state: ${newState}`);
+      return newState;
+    });
+  };
 
   return (
     <DashboardContainer>
@@ -469,43 +318,44 @@ const Dashboard: React.FC = () => {
           <span>Iris</span>
         </Branding>
         <IconsWrapper>
+          {/* First Icon: Firebase Logs */}
           <IconItem
             expanded={isSidebarExpanded}
-            onClick={() => setActivePanel("workflow")}
+            onClick={() => handlePanelChange("logs")}
           >
             <BarChart size={30} />
             {isSidebarExpanded && <IconLabel>Logs</IconLabel>}
           </IconItem>
           <IconItem
             expanded={isSidebarExpanded}
-            onClick={() => setActivePanel("line")}
+            onClick={() => handlePanelChange("line")}
           >
             <LineChart size={30} />
             {isSidebarExpanded && <IconLabel>Line Chart</IconLabel>}
           </IconItem>
           <IconItem
             expanded={isSidebarExpanded}
-            onClick={() => setActivePanel("pie")}
+            onClick={() => handlePanelChange("pie")}
           >
             <PieChart size={30} />
             {isSidebarExpanded && <IconLabel>Pie Chart</IconLabel>}
           </IconItem>
           <IconItem
             expanded={isSidebarExpanded}
-            onClick={() => setActivePanel("area")}
+            onClick={() => handlePanelChange("area")}
           >
             <AreaChart size={30} />
             {isSidebarExpanded && <IconLabel>Area Chart</IconLabel>}
           </IconItem>
         </IconsWrapper>
-        <ExitButton expanded={isSidebarExpanded} onClick={() => navigate("/")}>
+        <ExitButton expanded={isSidebarExpanded} onClick={() => {
+          console.log("[Dashboard] Exiting dashboard, navigating to root.");
+          navigate("/");
+        }}>
           <LogOut size={20} />
           <span>Exit</span>
         </ExitButton>
-        <ToggleContainer
-          expanded={isSidebarExpanded}
-          onClick={() => setSidebarExpanded((prev) => !prev)}
-        >
+        <ToggleContainer expanded={isSidebarExpanded} onClick={handleToggleSidebar}>
           {isSidebarExpanded ? (
             <ChevronLeft size={20} />
           ) : (
@@ -514,7 +364,7 @@ const Dashboard: React.FC = () => {
         </ToggleContainer>
       </Sidebar>
       <ContentArea expanded={isSidebarExpanded}>
-        {activePanel === "workflow" && <FirebaseLogs />}
+        {activePanel === "logs" && <FirebaseLogs />}
         {activePanel === "line" && (
           <InfoPanel
             title="Line Chart Details"
