@@ -144,7 +144,7 @@ const FocusGraph3D: React.FC = () => {
       fgRef.current.cameraPosition(
         { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
         node,
-        3000
+        1200
       );
     }
     if (imageTimeoutRef.current) clearTimeout(imageTimeoutRef.current);

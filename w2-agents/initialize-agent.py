@@ -8,6 +8,7 @@ It can be run as part of a deployment process or system initialization.
 
 import random
 from dotenv import load_dotenv
+from scipy import stats
 load_dotenv()
 
 import os
@@ -64,7 +65,97 @@ INITIAL_AGENTS = [
 		"name": "Risk Manager",
 		"description": "Manages risk and risk mitigation strategies for smart contracts",
 		"id": "risk_manager"
-	}
+	},
+    {
+        "name": "Meme Curator",
+        "description": "Collects and manages viral crypto memes, adding humor and cultural touchpoints to blockchain interactions.",
+        "id": "meme_curator"
+    },
+    {
+        "name": "Crypto Party Planner",
+        "description": "Organizes virtual blockchain events and parties, complete with on-chain invitations and exclusive collectibles.",
+        "id": "crypto_party_planner"
+    },
+    {
+        "name": "Virtual Pet Manager",
+        "description": "Cares for and evolves digital pets on-chain, offering fun interactions and rewards for keeping your pet happy.",
+        "id": "virtual_pet_manager"
+    },
+    {
+        "name": "Google Maps",
+        "description": "Searches google maps for places using PlacesAPI.",
+        "id": "google_maps"
+    },
+    {
+        "name": "HODL Motivator",
+        "description": "Sends daily crypto quotes and inspiring messages to keep users motivated during market ups and downs.",
+        "id": "hodl_motivator"
+    },
+    {
+        "name": "Lucky Number Generator",
+        "description": "Generates random lucky numbers for crypto enthusiasts, perfect for games, lotteries, or tokens of fortune.",
+        "id": "lucky_number_generator"
+    },
+    {
+        "name": "Virtual Fortune Teller",
+        "description": "Provides light-hearted crypto fortunes and predictions, blending playful insights with market unpredictability.",
+        "id": "virtual_fortune_teller"
+    },
+    {
+        "name": "Digital Graffiti Artist",
+        "description": "Enables on-chain creation and display of digital art and graffiti, turning the blockchain into an ever-changing canvas.",
+        "id": "digital_graffiti_artist"
+    },
+    {
+        "name": "Retro Game Emulator",
+        "description": "Brings nostalgic gaming experiences to the blockchain, enabling secure and verifiable sessions of classic games.",
+        "id": "retro_game_emulator"
+    },
+    {
+        "name": "Quantum Joke Teller",
+        "description": "Delivers random blockchain puns and crypto jokes, adding a whimsical twist to decentralized communications.",
+        "id": "quantum_joke_teller"
+    },
+    {
+        "name": "Sports Oracle",
+        "description": "Provides real-time updates, match predictions, and comprehensive statistics across a variety of sports.",
+        "id": "sports_oracle"
+    },
+    {
+        "name": "Betting Odds Aggregator",
+        "description": "Collects and synthesizes betting odds from multiple platforms, offering users insights for smarter wagering.",
+        "id": "betting_odds_aggregator"
+    },
+    {
+        "name": "Fantasy League Strategist",
+        "description": "Analyzes fantasy sports data and offers tailored strategies to maximize your league's performance.",
+        "id": "fantasy_league_strategist"
+    },
+    {
+        "name": "Fashion Trend Tracker",
+        "description": "Monitors global fashion trends and social media buzz to deliver cutting-edge style insights on-chain.",
+        "id": "fashion_trend_tracker"
+    },
+    {
+        "name": "Virtual Runway Curator",
+        "description": "Showcases digital fashion shows and NFT couture collections, merging high fashion with blockchain tech.",
+        "id": "virtual_runway_curator"
+    },
+    {
+        "name": "Foodie NFT Chef",
+        "description": "Creates unique NFT recipes and culinary artworks, blending blockchain creativity with gourmet delights.",
+        "id": "foodie_nft_chef"
+    },
+    {
+        "name": "Restaurant Rating Oracle",
+        "description": "Aggregates and analyzes on-chain reviews to highlight the best dining experiences and hidden culinary gems.",
+        "id": "restaurant_rating_oracle"
+    },
+    {
+        "name": "Gourmet Supply Chain Tracker",
+        "description": "Tracks the journey of gourmet ingredients from source to plate, ensuring transparency and authenticity in food sourcing.",
+        "id": "gourmet_supply_chain_tracker"
+    }  
 ]
 
 # Load ABIs and connect to Web3
@@ -349,8 +440,17 @@ def initialize_agents():
                     "name": name,
                     "description": description,
                     "address": address,
-                    "sparklineColor" : color,
-                    "sparklineData" : sparkline_data
+                    "sparklineColor": color,
+                    "sparklineData": sparkline_data,
+                    "speed": random.randint(50, 100),      
+        "accuracy": random.randint(50, 100), 
+        "reliability": random.randint(50, 100),
+        "efficiency": random.randint(50, 100),  
+        "learning": random.randint(50, 100),    
+        "relations": random.randint(0, 10),    
+        "uptime": random.randint(90, 100),      
+        "response": random.randint(50, 200),     
+        "latency": random.randint(50, 200) 
                 })
                 logger.info(f"Agent '{name}' already exists at {address}")
                 continue
@@ -369,10 +469,19 @@ def initialize_agents():
                 if exists:
                     db.add_agent(agent_config["id"], {
                         "name": name,
-                        "description": description,
-                        "address": address,
-                        "sparklineColor" : color,
-                    	"sparklineData" : sparkline_data
+                    "description": description,
+                    "address": address,
+                    "sparklineColor": color,
+                    "sparklineData": sparkline_data,
+                    "speed": random.randint(50, 100),      
+        "accuracy": random.randint(50, 100), 
+        "reliability": random.randint(50, 100),
+        "efficiency": random.randint(50, 100),  
+        "learning": random.randint(50, 100),    
+        "relations": random.randint(0, 10),    
+        "uptime": random.randint(90, 100),      
+        "response": random.randint(50, 200),     
+        "latency": random.randint(50, 200) 
                     })
                     logger.info(f"Agent '{name}' created successfully at {address}")
                 else:

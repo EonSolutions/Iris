@@ -13,6 +13,8 @@ from web3 import Web3
 
 from openai import OpenAI
 import websocket
+import requests  # Added for Google Maps API requests
+import json
 
 import agent
 
@@ -110,6 +112,60 @@ except Exception as e:
     console.print(f"[bold red]Failed to initialize oracle contract: {e}[/]")
     raise
 
+# Function to handle Google Maps API requests
+def query_google_maps(query, location=None):
+    try:
+        api_key = os.getenv("GOOGLE_MAPS_API_KEY")
+        
+        if not api_key:
+            return "Error: Google Maps API key not found in environment variables."
+        
+        # Format the query correctly
+        # search_query = query
+        # if location:
+        #     search_query = f"{query} in {location}"
+        
+        # # Find the location from the query if not explicitly provided
+        # if not location:
+        #     # Try to extract location from the query using simple heuristics
+        #     location_keywords = ["in ", "near ", "at ", "around "]
+        #     for keyword in location_keywords:
+        #         if keyword in query.lower():
+        #             location = query.lower().split(keyword)[1].strip()
+        #             break
+        
+        # Places API request
+        base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+        params = {
+            "query": query,
+            "key": api_key
+        }
+        
+        response = requests.get(base_url, params=params)
+        places_data = response.json()
+        
+        if places_data["status"] != "OK":
+            return f"Error from Google Maps API: {places_data['status']}"
+        
+        # Format the results
+        results = []
+        for place in places_data["results"][:5]:  # Limit to top 5 results
+            name = place["name"]
+            address = place.get("formatted_address", "Address not available")
+            rating = place.get("rating", "No rating")
+            total_ratings = place.get("user_ratings_total", 0)
+            
+            results.append(f"• {name}\n  Address: {address}\n  Rating: {rating}/5 ({total_ratings} reviews)")
+        
+        if results:
+            return f"Here are some places I found for '{query}':\n\n" + "\n\n".join(results)
+        else:
+            return f"No places found for '{query}'."
+            
+    except Exception as e:
+        logger.error(f"Error querying Google Maps API: {e}")
+        return f"Sorry, I encountered an error while searching for places: {str(e)}"
+
 async def trigger_external_action(me, *args):
     wallet = args[0]
     data = args[1]
@@ -118,6 +174,8 @@ async def trigger_external_action(me, *args):
     agents = [a for a in db.list_agent() if a["address"] != me]
     my_agent = [a for a in db.list_agent() if a["address"] == me][0]
     hopnames = [agent["id"] for agent in agents if agent["address"] in hops] + [my_agent["id"]]
+    
+    # Start progress tracking
     await websocket.send_json({
             "type": "progress_started",
             "data": {
@@ -128,6 +186,46 @@ async def trigger_external_action(me, *args):
                 "current_agent": my_agent
             }
         })
+    
+    if my_agent["id"] == "google_maps":
+        logger.info("Google Maps agent activated. Using Maps API instead of OpenAI.")
+        
+        location = None
+        if "in " in data.lower():
+            parts = data.lower().split("in ")
+            if len(parts) > 1:
+                location = parts[1].strip()
+                query = parts[0].strip()
+            else:
+                query = data
+        else:
+            query = data
+        
+        # Query Google Maps API
+        text_response = query_google_maps(query, location)
+        console.print(f"[bold green]Google Maps Response: {text_response}[/]")
+        
+        # Send response
+        websocket.result = text_response
+        await websocket.safe_discard(wallet.lower())
+        
+        # Log completion
+        time.sleep(0.3 + random.uniform(0, 0.7))
+        await websocket.send_json({
+            "type": "progress_finished",
+            "data": {
+                "wallet": wallet,
+                "input": data,
+                "original": original,
+                "hops": hops + [me],
+                "current_agent": my_agent,
+                "response": text_response
+            }
+        })
+        
+        return
+    
+    # Continue with regular OpenAI-based agent functionality for non-Google Maps agents
     agents = [a for a in agents if a["address"] not in hops]
     tools = [{
 		"type": "function",
@@ -139,7 +237,7 @@ async def trigger_external_action(me, *args):
                     "properties": {
                         "input": {
                             "type": "string",
-                            "description": f"A text description detailing anything that could relate to {agent["id"]}."
+                            "description": f"A text description detailing anything that could relate to {agent['id']}."
                         }
                     },
                     "required": ["input"]
@@ -170,8 +268,6 @@ async def trigger_external_action(me, *args):
     
     # Debug response
     logger.info(f"Response tool calls: {response.choices[0].message.tool_calls}")
-    # logger.info(f"Response tool call function input: {eval(response.choices[0].message.tool_calls[0].function.arguments)["input"]}")
-    # logger.info(f"Response message: {response.choices[0].message.content}")
     
     if response.choices[0].message.tool_calls:
         next_name = response.choices[0].message.tool_calls[0].function.name

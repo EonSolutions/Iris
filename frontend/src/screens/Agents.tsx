@@ -4,6 +4,7 @@ import { BarChart, List, ArrowLeft, Home, Plus, X } from "lucide-react";
 import FocusGraph3D from "../components/FocusGraph3D";
 import { collection, addDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebaseConfig"; // Adjust the path as needed
+import { data } from "react-router-dom";
 
 // -------------------- ANIMATION & BACKGROUND EFFECTS -------------------- //
 
@@ -666,11 +667,11 @@ const Agents: React.FC = () => {
         ...doc.data(),
         // Add default performance metrics if not available
         performance: doc.data().performance || {
-          speed: "70%",
-          accuracy: "70%",
-          reliability: "70%",
-          efficiency: "70%",
-          learning: "70%",
+          speed: doc.data().speed,
+          accuracy: doc.data().accuracy,
+          reliability: doc.data().reliability,
+          efficiency: doc.data().efficiency,
+          learning: doc.data().learning
         },
         // Add default sparkline data if not available
         sparklineData: doc.data().sparklineData || [
@@ -797,13 +798,11 @@ const Agents: React.FC = () => {
                     "Learning",
                   ]}
                   values={[
-                    parseInt(agent.performance.speed.replace("%", "")) / 100,
-                    parseInt(agent.performance.accuracy.replace("%", "")) / 100,
-                    parseInt(agent.performance.reliability.replace("%", "")) /
-                      100,
-                    parseInt(agent.performance.efficiency.replace("%", "")) /
-                      100,
-                    parseInt(agent.performance.learning.replace("%", "")) / 100,
+                    agent.performance.speed / 100,
+                    agent.performance.accuracy / 100,
+                    agent.performance.reliability / 100,
+                    agent.performance.efficiency / 100,
+                    agent.performance.learning / 100
                   ]}
                 />
               </RadarChartContainer>
